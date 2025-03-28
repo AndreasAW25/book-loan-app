@@ -1,0 +1,98 @@
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Dashboard</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Buku</h5>
+                <p class="card-text display-4"><%= totalBooks %></p>
+                <a href="/books" class="btn btn-light">Lihat Buku</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Peminjam</h5>
+                <p class="card-text display-4"><%= totalBorrowers %></p>
+                <a href="/borrowers" class="btn btn-light">Lihat Peminjam</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">Peminjaman Aktif</h5>
+                <p class="card-text display-4"><%= activeLoans %></p>
+                <a href="/loans" class="btn btn-light">Lihat Peminjaman</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Peminjaman Terbaru</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Buku</th>
+                                <th>Peminjam</th>
+                                <th>Tanggal Pinjam</th>
+                                <th>Jatuh Tempo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% recentLoans.forEach(loan => { %>
+                                <tr>
+                                    <td><%= loan.book_title %></td>
+                                    <td><%= loan.borrower_name %></td>
+                                    <td><%= new Date(loan.loan_date).toLocaleDateString() %></td>
+                                    <td><%= new Date(loan.due_date).toLocaleDateString() %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Buku Populer</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Judul</th>
+                                <th>Penulis</th>
+                                <th>Stok</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% popularBooks.forEach(book => { %>
+                                <tr>
+                                    <td><%= book.title %></td>
+                                    <td><%= book.author %></td>
+                                    <td><%= book.quantity %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
