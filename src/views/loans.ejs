@@ -1,0 +1,169 @@
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>Daftar Peminjaman</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLoanModal">
+            <i class="fas fa-plus"></i> Tambah Peminjaman
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Buku</th>
+                        <th>Peminjam</th>
+                        <th>Tanggal Pinjam</th>
+                        <th>Jatuh Tempo</th>
+                        <th>Tanggal Kembali</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% loans.forEach(loan => { %>
+                        <tr>
+                            <td><%= loan.id %></td>
+                            <td><%= loan.book_title %></td>
+                            <td><%= loan.borrower_name %></td>
+                            <td><%= new Date(loan.loan_date).toLocaleDateString() %></td>
+                            <td><%= new Date(loan.due_date).toLocaleDateString() %></td>
+                            <td><%= loan.return_date ? new Date(loan.return_date).toLocaleDateString() : '-' %></td>
+                            <td>
+                                <% if (loan.return_date) { %>
+                                    <span class="badge bg-success">Dikembalikan</span>
+                                <% } else { %>
+                                    <span class="badge bg-warning">Dipinjam</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (!loan.return_date) { %>
+                                    <button class="btn btn-sm btn-success return-book" data-id="<%= loan.id %>">
+                                        <i class="fas fa-undo"></i> Kembalikan
+                                    </button>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Loan Modal -->
+<div class="modal fade" id="addLoanModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Peminjaman Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addLoanForm">
+                    <div class="mb-3">
+                        <label class="form-label">Buku</label>
+                        <select class="form-select" name="book_id" required>
+                            <option value="">Pilih Buku</option>
+                            <% books.forEach(book => { %>
+                                <option value="<%= book.id %>" <%= book.quantity <= 0 ? 'disabled' : '' %>>
+                                    <%= book.title %> (Stok: <%= book.quantity %>)
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Peminjam</label>
+                        <select class="form-select" name="borrower_id" required>
+                            <option value="">Pilih Peminjam</option>
+                            <% borrowers.forEach(borrower => { %>
+                                <option value="<%= borrower.id %>"><%= borrower.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tanggal Pinjam</label>
+                        <input type="date" class="form-control" name="loan_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Jatuh Tempo</label>
+                        <input type="date" class="form-control" name="due_date" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="saveLoan">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default dates
+    const today = new Date().toISOString().split('T')[0];
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    const nextMonthDate = nextMonth.toISOString().split('T')[0];
+
+    document.querySelector('[name="loan_date"]').value = today;
+    document.querySelector('[name="due_date"]').value = nextMonthDate;
+
+    // Add Loan
+    document.getElementById('saveLoan').addEventListener('click', async function() {
+        const form = document.getElementById('addLoanForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/api/loans', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Gagal menambah peminjaman');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan');
+        }
+    });
+
+    // Return Book
+    document.querySelectorAll('.return-book').forEach(button => {
+        button.addEventListener('click', async function() {
+            if (confirm('Apakah Anda yakin ingin mengembalikan buku ini?')) {
+                const id = this.dataset.id;
+
+                try {
+                    const response = await fetch(`/api/loans/${id}/return`, {
+                        method: 'PUT'
+                    });
+
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Gagal mengembalikan buku');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan');
+                }
+            }
+        });
+    });
+});
+</script> 

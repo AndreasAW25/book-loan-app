@@ -1,0 +1,228 @@
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>Daftar Peminjam</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBorrowerModal">
+            <i class="fas fa-plus"></i> Tambah Peminjam
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nama</th>
+                        <th>Email</th>
+                        <th>Telepon</th>
+                        <th>Alamat</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% borrowers.forEach(borrower => { %>
+                        <tr>
+                            <td><%= borrower.id %></td>
+                            <td><%= borrower.name %></td>
+                            <td><%= borrower.email %></td>
+                            <td><%= borrower.phone %></td>
+                            <td><%= borrower.address %></td>
+                            <td>
+                                <button class="btn btn-sm btn-warning edit-borrower" 
+                                        data-id="<%= borrower.id %>"
+                                        data-name="<%= borrower.name %>"
+                                        data-email="<%= borrower.email %>"
+                                        data-phone="<%= borrower.phone %>"
+                                        data-address="<%= borrower.address %>">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-borrower" data-id="<%= borrower.id %>">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Borrower Modal -->
+<div class="modal fade" id="addBorrowerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Peminjam Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addBorrowerForm">
+                    <div class="mb-3">
+                        <label class="form-label">Nama</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Telepon</label>
+                        <input type="text" class="form-control" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Alamat</label>
+                        <textarea class="form-control" name="address" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="saveBorrower">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Borrower Modal -->
+<div class="modal fade" id="editBorrowerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Peminjam</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editBorrowerForm">
+                    <input type="hidden" name="id">
+                    <div class="mb-3">
+                        <label class="form-label">Nama</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Telepon</label>
+                        <input type="text" class="form-control" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Alamat</label>
+                        <textarea class="form-control" name="address" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="updateBorrower">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add Borrower
+    document.getElementById('saveBorrower').addEventListener('click', async function() {
+        const form = document.getElementById('addBorrowerForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/api/borrowers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Gagal menambah peminjam');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan');
+        }
+    });
+
+    // Edit Borrower
+    document.querySelectorAll('.edit-borrower').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const name = this.dataset.name;
+            const email = this.dataset.email;
+            const phone = this.dataset.phone;
+            const address = this.dataset.address;
+
+            const form = document.getElementById('editBorrowerForm');
+            form.querySelector('[name="id"]').value = id;
+            form.querySelector('[name="name"]').value = name;
+            form.querySelector('[name="email"]').value = email;
+            form.querySelector('[name="phone"]').value = phone;
+            form.querySelector('[name="address"]').value = address;
+
+            new bootstrap.Modal(document.getElementById('editBorrowerModal')).show();
+        });
+    });
+
+    // Update Borrower
+    document.getElementById('updateBorrower').addEventListener('click', async function() {
+        const form = document.getElementById('editBorrowerForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        const id = data.id;
+        delete data.id;
+
+        try {
+            const response = await fetch(`/api/borrowers/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Gagal mengupdate peminjam');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan');
+        }
+    });
+
+    // Delete Borrower
+    document.querySelectorAll('.delete-borrower').forEach(button => {
+        button.addEventListener('click', async function() {
+            if (confirm('Apakah Anda yakin ingin menghapus peminjam ini?')) {
+                const id = this.dataset.id;
+
+                try {
+                    const response = await fetch(`/api/borrowers/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Gagal menghapus peminjam');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan');
+                }
+            }
+        });
+    });
+});
+</script> 

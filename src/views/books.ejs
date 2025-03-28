@@ -1,0 +1,227 @@
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>Daftar Buku</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBookModal">
+            <i class="fas fa-plus"></i> Tambah Buku
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Judul</th>
+                        <th>Penulis</th>
+                        <th>ISBN</th>
+                        <th>Stok</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% books.forEach(book => { %>
+                        <tr>
+                            <td><%= book.id %></td>
+                            <td><%= book.title %></td>
+                            <td><%= book.author %></td>
+                            <td><%= book.isbn %></td>
+                            <td><%= book.quantity %></td>
+                            <td>
+                                <button class="btn btn-sm btn-warning edit-book" data-id="<%= book.id %>" 
+                                        data-title="<%= book.title %>" 
+                                        data-author="<%= book.author %>" 
+                                        data-isbn="<%= book.isbn %>" 
+                                        data-quantity="<%= book.quantity %>">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-book" data-id="<%= book.id %>">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Book Modal -->
+<div class="modal fade" id="addBookModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Buku Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addBookForm">
+                    <div class="mb-3">
+                        <label class="form-label">Judul</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Penulis</label>
+                        <input type="text" class="form-control" name="author" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">ISBN</label>
+                        <input type="text" class="form-control" name="isbn" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Stok</label>
+                        <input type="number" class="form-control" name="quantity" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="saveBook">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Book Modal -->
+<div class="modal fade" id="editBookModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Buku</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editBookForm">
+                    <input type="hidden" name="id">
+                    <div class="mb-3">
+                        <label class="form-label">Judul</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Penulis</label>
+                        <input type="text" class="form-control" name="author" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">ISBN</label>
+                        <input type="text" class="form-control" name="isbn" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Stok</label>
+                        <input type="number" class="form-control" name="quantity" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="updateBook">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add Book
+    document.getElementById('saveBook').addEventListener('click', async function() {
+        const form = document.getElementById('addBookForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/api/books', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Gagal menambah buku');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan');
+        }
+    });
+
+    // Edit Book
+    document.querySelectorAll('.edit-book').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const title = this.dataset.title;
+            const author = this.dataset.author;
+            const isbn = this.dataset.isbn;
+            const quantity = this.dataset.quantity;
+
+            const form = document.getElementById('editBookForm');
+            form.querySelector('[name="id"]').value = id;
+            form.querySelector('[name="title"]').value = title;
+            form.querySelector('[name="author"]').value = author;
+            form.querySelector('[name="isbn"]').value = isbn;
+            form.querySelector('[name="quantity"]').value = quantity;
+
+            new bootstrap.Modal(document.getElementById('editBookModal')).show();
+        });
+    });
+
+    // Update Book
+    document.getElementById('updateBook').addEventListener('click', async function() {
+        const form = document.getElementById('editBookForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        const id = data.id;
+        delete data.id;
+
+        try {
+            const response = await fetch(`/api/books/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Gagal mengupdate buku');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan');
+        }
+    });
+
+    // Delete Book
+    document.querySelectorAll('.delete-book').forEach(button => {
+        button.addEventListener('click', async function() {
+            if (confirm('Apakah Anda yakin ingin menghapus buku ini?')) {
+                const id = this.dataset.id;
+
+                try {
+                    const response = await fetch(`/api/books/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Gagal menghapus buku');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan');
+                }
+            }
+        });
+    });
+});
+</script> 

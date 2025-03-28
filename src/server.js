@@ -27,9 +27,44 @@ app.use('/api/books', bookRoutes);
 app.use('/api/borrowers', borrowerRoutes);
 app.use('/api/loans', loanRoutes);
 
-// Dashboard Routes
+// View Routes
 app.use('/', dashboardRoutes);
 app.use('/dashboard', dashboardRoutes);
+
+// Books View
+app.get('/books', async (req, res) => {
+    try {
+        const books = await require('./models/bookModel').getAll();
+        res.render('books', { books });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).render('error', { message: 'Terjadi kesalahan saat memuat data buku' });
+    }
+});
+
+// Borrowers View
+app.get('/borrowers', async (req, res) => {
+    try {
+        const borrowers = await require('./models/borrowerModel').getAll();
+        res.render('borrowers', { borrowers });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).render('error', { message: 'Terjadi kesalahan saat memuat data peminjam' });
+    }
+});
+
+// Loans View
+app.get('/loans', async (req, res) => {
+    try {
+        const loans = await require('./models/loanModel').getAll();
+        const books = await require('./models/bookModel').getAll();
+        const borrowers = await require('./models/borrowerModel').getAll();
+        res.render('loans', { loans, books, borrowers });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).render('error', { message: 'Terjadi kesalahan saat memuat data peminjaman' });
+    }
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
